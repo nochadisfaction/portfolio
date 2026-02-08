@@ -12,10 +12,24 @@ export interface Note {
 
 export const notes: readonly Note[] = [
   {
-    id: '1',
-    title: 'A Little Letter',
-    content: 'a little letter I\'m writing in a rush because I love you, a letter because I love you. After all, I love you so much it is getting harder by the day to keep it all to myself and as a consequence, I write to you because I need to give this love a physical form sometimes, something legible and tangible, something you\'d understand when you come across it. It\'ll be a relief to see you after a long wait. I try to remember all the things you say (I want to know you, I want to know you the way you wish to be known). Take care of your heart; mine resides within yours. You can speak for as long as you want, and I promise to listen, I hope you know you can share your bad days with me, too. I will listen even when you don\'t have anything to say; there is enough love that words fail to make themselves useful. I have missed you, I miss you now, and I miss you tomorrow as well. Yours always, Aish <3',
-    updatedAt: '2025-12-25T00:00:00Z',
-  }
+    id: "1",
+    title: "About This Space",
+    content:
+      "Welcome to my digital workspace.\n\nI'm Vivi — also known as chadisfaction. I build systems, write code, and think too much about the intersection of AI, society, and what it means to build technology that actually matters.\n\nCurrent focus:\n• Pixelated Empathy — enterprise AI for emotional intelligence\n• Gem City — my digital embassy for tech discourse\n• Exploring the edge where machine learning meets human consciousness\n\nDomains I operate:\n→ gemcity.xyz (central hub)\n→ pixelatedempathy.com (flagship AI)\n→ chadisfaction.tech (dev playground)\n→ acab.lol (activist tech)\n→ vivi.rocks (creative outlet)\n→ bantesla.lol (critical analysis)\n\n— Vivi",
+    updatedAt: "2025-02-08T00:00:00Z",
+  },
+  {
+    id: "2",
+    title: "Working With Me",
+    content:
+      "I collaborate on projects that challenge the status quo.\n\nWhat I'm interested in:\n• AI systems that augment human capability\n• Tools for organizers and activists\n• Open source infrastructure\n• Code as craft, not commodity\n\nWhat I'm NOT interested in:\n• VC-backed hype cycles\n• Surveillance tech (even if it's \"for safety\")\n• Extractive business models disguised as innovation\n• \"Move fast and break things\" (we've broken enough)\n\nIf you're building something that empowers the marginalized, questions power structures, or pushes AI in genuinely new directions — let's talk.\n\nchad@gemcity.xyz",
+    updatedAt: "2025-02-08T00:00:00Z",
+  },
+  {
+    id: "3",
+    title: "Tech Stack Notes",
+    content:
+      'What I\'m currently working with:\n\nAI/ML:\n• Python, FastAPI, PostgreSQL\n• OpenAI API, custom model fine-tuning\n• Emotional intelligence pattern recognition\n\nWeb/Systems:\n• Astro, Next.js, TypeScript\n• Tailwind, React, Node\n• Rust (learning, experimenting)\n\nInfrastructure:\n• Vercel, Supabase, Docker\n• Privacy-first, decentralized where possible\n\nPhilosophy:\nBuild for the long haul. Question every dependency. Keep it human-scale.\n\n"The best code is written with one eye on the compiler and the other on the society it will shape."',
+    updatedAt: "2025-02-08T00:00:00Z",
+  },
 ] as const;
-
