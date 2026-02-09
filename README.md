@@ -32,26 +32,27 @@ A modern, interactive portfolio built with Astro, React, and Tailwind CSS, featu
 
 ## 📦 Installation
 
-1) Clone the repository
+1. Clone the repository
 
 ```bash
 git clone https://github.com/aabdoo23/portfolio
 cd portfolio
 ```
 
-2) Install dependencies
+1. Install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
-3) Configure environment variables
+1. Configure environment variables
 
 Copy `.env.example` to `.env` and fill in:
 
-```
+```bash
 # AI Terminal
-GROQ_API_KEY=your_groq_api_key_here
+NVIDIA_API_KEY=your_nvidia_api_key_here
+NVIDIA_MODEL=meta/llama-3.3-70b-instruct
 
 # Site
 # PUBLIC_SITE_URL=https://your-domain.tld
@@ -69,7 +70,7 @@ ADMIN_PASSWORD=change_me
 IMGBB_API_KEY=your_imgbb_api_key_here
 ```
 
-4) Create the database tables (Supabase)
+1. Create the database tables (Supabase)
 
 Run this SQL in the Supabase SQL editor:
 
@@ -123,11 +124,12 @@ alter table public.backgrounds enable row level security;
 **Important:** All content (notes, music playlists, photo albums) is now managed dynamically through Supabase. The config files in `src/config/` are reference/backup only and are not used at runtime. If Supabase is not configured or data is missing, the app will show empty/error states.
 
 See `MIGRATION.md` for detailed instructions on:
+
 - Setting up the database schema
 - Migrating existing notes and app configuration data to Supabase
 - Managing content through the Supabase dashboard or SQL
 
-5) Migrate your content to Supabase
+1. Migrate your content to Supabase
 
 After creating the database tables, migrate your content:
 
@@ -138,20 +140,21 @@ After creating the database tables, migrate your content:
   - `icloud_photos_album_url` — iCloud Photos shared album URL
 
 Reference files (not used at runtime):
+
 - `src/config/notes.ts` — Reference structure for notes
 - `src/config/apps.ts` — Reference structure for music and photo album config
 - `src/config/site.ts` — SEO (title/description/keywords) and theme colors
 
 All types are defined in `src/types` and aggregated as `userConfig` in `src/config/index.ts`.
 
-
 Tips:
+
 - In Vercel Project Settings → Environment Variables, set `PUBLIC_SITE_URL` (e.g., `https://your-domain.tld`) so canonical/OG links are correct.
 - Add Supabase + Admin envs (server-only): `SUPABASE_URL`, `SUPABASE_KEY`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `IMGBB_API_KEY`.
 
 ## 📁 Project Structure
 
-```
+```bash
 ├── src/
 │   ├── components/      # React components
 │   ├── layouts/         # Astro/React layouts
@@ -179,23 +182,28 @@ Tips:
 - `src/pages/api/admin/messages.ts`: Admin messages list (requires session token)
 
 State management:
+
 - `AppLayout.tsx` uses a reducer to manage app windows (`notes`, `music`, `photoAlbum`) instead of multiple booleans.
 
 Dynamic content:
+
 - `/api/content/notes` — Fetches notes from Supabase `notes` table (no fallback)
 - `/api/content/config` — Fetches app config from Supabase `app_config` table (returns `null` if missing, no fallback)
 - All content must be configured in Supabase; config files are reference only
 
 Shortcuts:
+
 - Cmd/Ctrl+K: Spotlight search
 - ?: Shortcuts overlay
 - Ctrl/Cmd+↑ or F3: Mission Control
 - Cmd/Ctrl+C: Open Contact form
 
 Accessibility:
+
 - Menubar, dialog, tree, and toolbar semantics; keyboard activation for dock/menu; labelled controls; `aria-live` for terminal/messages.
 
 SEO:
+
 - `@astrolib/seo` provides meta, Twitter cards, openGraph with a safe fallback image; JSON-LD for WebSite and Person.
 
 ## 🚀 Deployment
@@ -204,11 +212,11 @@ The project is configured for deployment on Vercel.
 
 1. Push to GitHub and connect the repo in Vercel
 2. In Project Settings → Environment Variables set:
-    - `PUBLIC_SITE_URL` = your production URL (e.g., https://your-domain.tld)
-    - `GROQ_API_KEY` = your key
-    - `SUPABASE_URL` = your Supabase project URL
-    - `SUPABASE_KEY` = service role key (server-only)
-    - `ADMIN_USERNAME`, `ADMIN_PASSWORD` = creds for `/admin`
+   - `PUBLIC_SITE_URL` = your production URL (e.g., <https://your-domain.tld>)
+   - `GROQ_API_KEY` = your key
+   - `SUPABASE_URL` = your Supabase project URL
+   - `SUPABASE_KEY` = service role key (server-only)
+   - `ADMIN_USERNAME`, `ADMIN_PASSWORD` = creds for `/admin`
 3. Vercel will deploy automatically. If auto-deploy fails, use the CLI commands above.
 
 ## 📝 License
@@ -226,6 +234,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 For questions or support, please open an issue on GitHub.
 
 Admin & data notes:
+
 - The contact form stores submissions in Supabase; RLS is enabled and only the server API (service role) can read/write.
 - The Admin Dashboard lives at `/admin` and uses username/password from env. It fetches messages via a server API secured by a short-lived session token.
 - **Dynamic Content**: Notes, music playlists, and photo album URLs are stored in Supabase and fetched at runtime. There is no fallback to config files—if Supabase is unavailable or data is missing, the app will show empty states. See `MIGRATION.md` for setup instructions.
