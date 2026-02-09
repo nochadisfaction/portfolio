@@ -1,20 +1,34 @@
-import { useState, useEffect, useRef } from 'react';
-import AppleMusicPlayer from './AppleMusicPlayer';
-import appleNotesIcon from '../../assets/images/apple-notes.svg?url';
-import applePhotosIcon from '../../assets/images/apple-photos.svg?url';
-import appleMusicIcon from '../../assets/images/apple-music.svg?url';
+import { useState, useEffect, useRef } from "react";
+import AppleMusicPlayer from "./AppleMusicPlayer";
+import appleNotesIcon from "../../assets/images/apple-notes.svg?url";
+import applePhotosIcon from "../../assets/images/apple-photos.svg?url";
+import appleMusicIcon from "../../assets/images/apple-music.svg?url";
+import { FiTerminal, FiShield, FiAlertTriangle } from "react-icons/fi";
 
 interface DesktopDockProps {
   onNotesClick: () => void;
   onPhotoAlbumClick: () => void;
+  onGlitchClick: () => void;
+  onIRCClick: () => void;
+  onExploitsClick: () => void;
   activeApps: {
     notes: boolean;
     music: boolean;
     photoAlbum: boolean;
+    glitch: boolean;
+    irc: boolean;
+    exploits: boolean;
   };
 }
 
-const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDockProps) => {
+const DesktopDock = ({
+  onNotesClick,
+  onPhotoAlbumClick,
+  onGlitchClick,
+  onIRCClick,
+  onExploitsClick,
+  activeApps,
+}: DesktopDockProps) => {
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
   const [showAppleMusic, setShowAppleMusic] = useState(false);
   const [mouseX, setMouseX] = useState<number | null>(null);
@@ -25,20 +39,20 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const response = await fetch('/api/content/config');
+        const response = await fetch("/api/content/config");
         if (response.ok) {
           const data = await response.json();
-          if (data?.music?.playlistId && typeof data.music.playlistId === 'string') {
+          if (data?.music?.playlistId && typeof data.music.playlistId === "string") {
             setPlaylistId(data.music.playlistId);
           } else {
             setPlaylistId(null);
           }
         } else {
-          console.error('Failed to fetch config:', response.status, response.statusText);
+          console.error("Failed to fetch config:", response.status, response.statusText);
           setPlaylistId(null);
         }
       } catch (error) {
-        console.error('Failed to fetch config:', error);
+        console.error("Failed to fetch config:", error);
         setPlaylistId(null);
       }
     };
@@ -55,7 +69,6 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
   };
 
   useEffect(() => {
-
     const handleMouseMove = (e: MouseEvent) => {
       if (dockRef.current) {
         const rect = dockRef.current.getBoundingClientRect();
@@ -71,11 +84,11 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
       setMouseX(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
@@ -98,9 +111,54 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
   );
 
   const icons = [
-    { id: 'notes', label: 'Notes', onClick: onNotesClick, iconSvg: appleNotesIcon, color: 'from-yellow-600 to-yellow-400', active: activeApps.notes },
-    { id: 'photoAlbum', label: 'Photos', onClick: onPhotoAlbumClick, iconSvg: applePhotosIcon, color: 'from-white-600 to-white-400', active: activeApps.photoAlbum },
-    { id: 'music', label: 'Apple Music', onClick: handleAppleMusicClick, iconSvg: appleMusicIcon, color: 'from-pink-600 to-pink-400', active: activeApps.music },
+    {
+      id: "notes",
+      label: "Notes",
+      onClick: onNotesClick,
+      iconSvg: appleNotesIcon,
+      color: "from-yellow-600 to-yellow-400",
+      active: activeApps.notes,
+    },
+    {
+      id: "photoAlbum",
+      label: "Photos",
+      onClick: onPhotoAlbumClick,
+      iconSvg: applePhotosIcon,
+      color: "from-white-600 to-white-400",
+      active: activeApps.photoAlbum,
+    },
+    {
+      id: "music",
+      label: "Apple Music",
+      onClick: handleAppleMusicClick,
+      iconSvg: appleMusicIcon,
+      color: "from-pink-600 to-pink-400",
+      active: activeApps.music,
+    },
+    {
+      id: "exploits",
+      label: "Security Advisories",
+      onClick: onExploitsClick,
+      icon: FiAlertTriangle,
+      color: "from-red-600 to-red-400",
+      active: activeApps.exploits,
+    },
+    {
+      id: "irc",
+      label: "Terminal",
+      onClick: onIRCClick,
+      icon: FiTerminal,
+      color: "from-green-600 to-green-400",
+      active: activeApps.irc,
+    },
+    {
+      id: "glitch",
+      label: "System",
+      onClick: onGlitchClick,
+      icon: FiShield,
+      color: "from-blue-600 to-blue-400",
+      active: activeApps.glitch,
+    },
   ] as Array<{
     id: string;
     label: string;
@@ -113,7 +171,10 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
 
   return (
     <>
-      <nav aria-label="Dock" className="fixed bottom-0 left-0 right-0 hidden md:flex justify-center pb-4 z-100">
+      <nav
+        aria-label="Dock"
+        className="fixed bottom-0 left-0 right-0 hidden md:flex justify-center pb-4 z-100"
+      >
         <div ref={dockRef} className="bg-gray-600/50 backdrop-blur-sm rounded-2xl p-2 shadow-xl">
           <div className="flex space-x-2" role="menubar">
             {icons.map((item, index) => {
@@ -125,23 +186,34 @@ const DesktopDock = ({ onNotesClick, onPhotoAlbumClick, activeApps }: DesktopDoc
                   key={item.id}
                   onClick={item.onClick}
                   aria-label={item.label}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick(); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      item.onClick();
+                    }
+                  }}
                   onMouseEnter={() => setHoveredIcon(item.id)}
                   onMouseLeave={() => setHoveredIcon(null)}
                   className="relative group"
-                  style={{ transform: `scale(${scale})`, transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                  style={{
+                    transform: `scale(${scale})`,
+                    transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
                 >
-                  <div className={`relative w-12 h-12 bg-gradient-to-t ${item.color} rounded-xl shadow-lg active:scale-95 ${item.active ? 'ring-2 ring-white/50' : ''} ${hasSvg ? 'overflow-hidden' : 'flex items-center justify-center'}`}>
+                  <div
+                    className={`relative w-12 h-12 bg-gradient-to-t ${item.color} rounded-xl shadow-lg active:scale-95 ${item.active ? "ring-2 ring-white/50" : ""} ${hasSvg ? "overflow-hidden" : "flex items-center justify-center"}`}
+                  >
                     {hasSvg && item.iconSvg ? (
-                      <img 
-                        src={item.iconSvg} 
-                        alt={item.label}
-                        className="w-full h-full"
-                      />
+                      <img src={item.iconSvg} alt={item.label} className="w-full h-full" />
                     ) : Icon ? (
-                      <Icon size={35} className='text-white' />
+                      <Icon size={35} className="text-white" />
                     ) : null}
-                    {item.active && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full" aria-hidden="true" />}
+                    {item.active && (
+                      <span
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                   {hoveredIcon === item.id && <Tooltip text={item.label} />}
                 </button>
