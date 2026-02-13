@@ -4,10 +4,7 @@ const json = (data: unknown, status = 200) =>
   new Response(JSON.stringify(data), {
     status,
     headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Content-Type': 'application/json'
     }
   });
 
@@ -308,9 +305,7 @@ export const OPTIONS: APIRoute = async () => {
   return new Response(null, {
     status: 204,
     headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Allow': 'POST, OPTIONS'
     },
   });
 };
