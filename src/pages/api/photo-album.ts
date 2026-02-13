@@ -139,7 +139,7 @@ export const POST: APIRoute = async ({ request }) => {
         if (a.isNumeric && !b.isNumeric) return -1;
         if (!a.isNumeric && b.isNumeric) return 1;
         // Both non-numeric: prefer known good names
-        const knownGood = ['PosterFrame', '720p', '1080p', '1280', '360p'];
+        const knownGood = ['PosterFrame'];
         const aIndex = knownGood.indexOf(a.key);
         const bIndex = knownGood.indexOf(b.key);
         if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex;
@@ -184,9 +184,8 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('[photo-album] Photo GUIDs extracted:', photoGuids.length);
 
     if (!photoGuids.length) {
-      const sampleDerivatives = streamData.photos[0]?.derivatives ? Object.keys(streamData.photos[0].derivatives) : 'none';
-      console.warn('[photo-album] No valid photos with any supported derivative. Available derivatives:', sampleDerivatives);
-      return bad(`No valid photos found. Available derivatives: ${Array.isArray(sampleDerivatives) ? sampleDerivatives.join(', ') : sampleDerivatives}`, 404);
+      console.warn('[photo-album] No valid photos found');
+      return bad('No valid photos found', 404);
     }
 
     // 2. Get the actual Asset URLs (by photoGuids)
@@ -224,59 +223,43 @@ export const POST: APIRoute = async ({ request }) => {
 
     const mediaItems = photoGuids
       .map((guid: string) => {
-        const mapping = photoMapping[guid];
-        if (!mapping) {
-          console.warn('[photo-album] No mapping found for GUID:', guid);
-          return null;
-        }
+        try {
+          const mapping = photoMapping[guid];
+          if (!mapping) return null;
 
-        const item = assetData.items?.[mapping.checksum];
+          const item = assetData.items?.[mapping.checksum];
+          if (!item) return null;
 
-        if (!item) {
-          console.warn('[photo-album] No item for checksum:', mapping.checksum, '(GUID:', guid, ', derivative:', mapping.derivative, ')');
-          return null;
-        }
+          const scheme = item.url_scheme || 'https';
+          const host = item.url_location;
+          const path = item.url_path;
 
-        // The item might contain scheme, host, path directly
-        const scheme = item.url_scheme || 'https';
-        const host = item.url_location;
-        const path = item.url_path;
+          if (host && path) {
+            const fullUrl = `${scheme}://${host}${path}`;
+            const urlObj = new URL(fullUrl);
+            const pathname = urlObj.pathname.toLowerCase();
+            const isVideo = videoExtensions.some(ext => pathname.endsWith(ext));
 
-        if (host && path) {
-          const fullUrl = `${scheme}://${host}${path}`;
-
-          // Detect if this is a video by checking the file extension in the URL
-          const urlObj = new URL(fullUrl);
-          const pathname = urlObj.pathname.toLowerCase();
-          const isVideo = videoExtensions.some(ext => pathname.endsWith(ext));
-
-          // For videos, try to find a PosterFrame thumbnail if available (optimized lookup)
-          let thumbnail: string | undefined = undefined;
-          if (isVideo) {
-            // Use Map lookup instead of find() - O(1) instead of O(n)
-            const originalPhoto = photoByGuid.get(guid);
-            if (originalPhoto?.derivatives?.PosterFrame?.checksum) {
-              const posterItem = assetData.items?.[originalPhoto.derivatives.PosterFrame.checksum];
-              if (posterItem?.url_location && posterItem?.url_path) {
-                const posterScheme = posterItem.url_scheme || 'https';
-                thumbnail = `${posterScheme}://${posterItem.url_location}${posterItem.url_path}`;
+            let thumbnail: string | undefined = undefined;
+            if (isVideo) {
+              const originalPhoto = photoByGuid.get(guid);
+              if (originalPhoto?.derivatives?.PosterFrame?.checksum) {
+                const posterItem = assetData.items?.[originalPhoto.derivatives.PosterFrame.checksum];
+                if (posterItem?.url_location && posterItem?.url_path) {
+                  const posterScheme = posterItem.url_scheme || 'https';
+                  thumbnail = `${posterScheme}://${posterItem.url_location}${posterItem.url_path}`;
+                }
               }
+              if (!thumbnail) thumbnail = fullUrl;
             }
-            // If no PosterFrame found, use the video URL as thumbnail (browser will show first frame)
-            if (!thumbnail) {
-              thumbnail = fullUrl;
-            }
+
+            return { url: fullUrl, isVideo, thumbnail };
           }
-
-          return {
-            url: fullUrl,
-            isVideo: isVideo,
-            thumbnail: thumbnail
-          };
+          return null;
+        } catch (e) {
+          console.warn('[photo-album] Error mapping Guid:', guid, e);
+          return null;
         }
-
-        console.warn('[photo-album] Missing host or path for checksum:', mapping.checksum, '(derivative:', mapping.derivative, ')');
-        return null;
       })
       .filter((item: any) => item !== null);
 
@@ -286,7 +269,7 @@ export const POST: APIRoute = async ({ request }) => {
     console.log('[photo-album] Photos:', photoCount, 'Videos:', videoCount);
 
     if (!mediaItems.length) {
-      console.error('[photo-album] No valid media URLs found. Sample asset data:', JSON.stringify(assetData).substring(0, 500));
+      console.error('[photo-album] No valid media URLs found');
       return bad('No valid media URLs found', 404);
     }
 
