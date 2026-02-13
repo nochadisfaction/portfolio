@@ -1,14 +1,14 @@
 import type { APIRoute } from 'astro';
 
-const json = (data: unknown, status = 200) => 
-  new Response(JSON.stringify(data), { 
-    status, 
-    headers: { 
+const json = (data: unknown, status = 200) =>
+  new Response(JSON.stringify(data), {
+    status,
+    headers: {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type',
-    } 
+    }
   });
 
 const bad = (message: string, status = 400) => json({ error: message }, status);
@@ -65,7 +65,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const ALBUM_ID = getAlbumIdFromUrl(albumUrl);
-  
+
   // Check cache first
   const cached = getCachedData(ALBUM_ID);
   if (cached) {
@@ -79,13 +79,18 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     // 1. Get the Stream (the list of photo identifiers)
+    const streamController = new AbortController();
+    const timeoutId = setTimeout(() => streamController.abort(), 10000);
+
     const streamResponse = await fetch(`${BASE_URL}/webstream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ streamGuid: ALBUM_ID }),
+      signal: streamController.signal,
     });
+    clearTimeout(timeoutId);
 
     if (!streamResponse.ok) {
       const errorText = await streamResponse.text().catch(() => '');
@@ -153,10 +158,10 @@ export const POST: APIRoute = async ({ request }) => {
         checksum: sorted[0].checksum
       };
     }
-    
+
     // Extract photo/video guids and map them to their checksums
     const photoMapping: Record<string, { checksum: string; derivative: string }> = {};
-    
+
     const photoGuids = streamData.photos
       .map((p: any) => {
         if (!p.derivatives || !p.photoGuid) {
@@ -189,13 +194,18 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     // 2. Get the actual Asset URLs (by photoGuids)
+    const assetController = new AbortController();
+    const assetTimeoutId = setTimeout(() => assetController.abort(), 10000);
+
     const assetResponse = await fetch(`${BASE_URL}/webasseturls`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ photoGuids }),
+      signal: assetController.signal,
     });
+    clearTimeout(assetTimeoutId);
 
     if (!assetResponse.ok) {
       const errorText = await assetResponse.text().catch(() => '');
@@ -216,7 +226,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // 4. Build URLs using the checksum mapping and detect video type from URL extension
     const videoExtensions = ['.mp4', '.mov', '.avi', '.mkv', '.webm', '.m4v'];
-    
+
     const mediaItems = photoGuids
       .map((guid: string) => {
         const mapping = photoMapping[guid];
@@ -226,7 +236,7 @@ export const POST: APIRoute = async ({ request }) => {
         }
 
         const item = assetData.items?.[mapping.checksum];
-        
+
         if (!item) {
           console.warn('[photo-album] No item for checksum:', mapping.checksum, '(GUID:', guid, ', derivative:', mapping.derivative, ')');
           return null;
@@ -236,14 +246,14 @@ export const POST: APIRoute = async ({ request }) => {
         const scheme = item.url_scheme || 'https';
         const host = item.url_location;
         const path = item.url_path;
-        
+
         if (host && path) {
           const fullUrl = `${scheme}://${host}${path}`;
-          
+
           // Detect if this is a video by checking the file extension in the URL
           const urlLower = fullUrl.toLowerCase();
           const isVideo = videoExtensions.some(ext => urlLower.includes(ext));
-          
+
           // For videos, try to find a PosterFrame thumbnail if available (optimized lookup)
           let thumbnail: string | undefined = undefined;
           if (isVideo) {
@@ -261,14 +271,14 @@ export const POST: APIRoute = async ({ request }) => {
               thumbnail = fullUrl;
             }
           }
-          
+
           return {
             url: fullUrl,
             isVideo: isVideo,
             thumbnail: thumbnail
           };
         }
-        
+
         console.warn('[photo-album] Missing host or path for checksum:', mapping.checksum, '(derivative:', mapping.derivative, ')');
         return null;
       })
@@ -286,7 +296,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     const responseData = { photos: mediaItems };
     setCachedData(ALBUM_ID, responseData); // Save to cache
-    
+
     return json(responseData);
   } catch (err: any) {
     console.error('[photo-album] Error fetching iCloud photos', err);

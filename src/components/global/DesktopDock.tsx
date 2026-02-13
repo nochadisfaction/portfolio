@@ -19,6 +19,7 @@ interface DesktopDockProps {
     irc: boolean;
     exploits: boolean;
   };
+  config: any;
 }
 
 const DesktopDock = ({
@@ -28,6 +29,7 @@ const DesktopDock = ({
   onIRCClick,
   onExploitsClick,
   activeApps,
+  config,
 }: DesktopDockProps) => {
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
   const [showAppleMusic, setShowAppleMusic] = useState(false);
@@ -35,30 +37,14 @@ const DesktopDock = ({
   const [playlistId, setPlaylistId] = useState<string | null>(null);
   const dockRef = useRef<HTMLDivElement>(null);
 
-  // Fetch app config from API
+  // Update playlistId when config changes
   useEffect(() => {
-    const fetchConfig = async () => {
-      try {
-        const response = await fetch("/api/content/config");
-        if (response.ok) {
-          const data = await response.json();
-          if (data?.music?.playlistId && typeof data.music.playlistId === "string") {
-            setPlaylistId(data.music.playlistId);
-          } else {
-            setPlaylistId(null);
-          }
-        } else {
-          console.error("Failed to fetch config:", response.status, response.statusText);
-          setPlaylistId(null);
-        }
-      } catch (error) {
-        console.error("Failed to fetch config:", error);
-        setPlaylistId(null);
-      }
-    };
-
-    fetchConfig();
-  }, []);
+    if (config?.music?.playlistId) {
+      setPlaylistId(config.music.playlistId);
+    } else {
+      setPlaylistId(null);
+    }
+  }, [config]);
 
   const handleAppleMusicClick = () => {
     setShowAppleMusic(true);

@@ -1,4 +1,5 @@
 import type { APIRoute } from 'astro';
+import { supabase } from '../../lib/supabase';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -12,12 +13,23 @@ export const POST: APIRoute = async ({ request }) => {
       );
     }
 
-    // In production, this would save to Supabase or send email
-    // For now, just log and return success
-    console.log('[Contact API] Message received:', { name, email, message: message.substring(0, 50) + '...' });
+    // Save to Supabase
+    if (supabase) {
+      const { error: supabaseError } = await supabase
+        .from('contacts')
+        .insert([{ name, email, message, created_at: new Date().toISOString() }]);
+
+      if (supabaseError) {
+        console.error('[Contact API] Supabase insertion error:', supabaseError);
+        throw new Error('Failed to save message to database');
+      }
+    } else {
+      console.warn('[Contact API] Supabase client not initialized, message lost');
+      throw new Error('Database service unavailable');
+    }
 
     return new Response(
-      JSON.stringify({ success: true, message: 'Message logged' }),
+      JSON.stringify({ success: true, message: 'Message sent successfully' }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     );
   } catch (error) {

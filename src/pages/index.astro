@@ -1,38 +1,25 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import LandingPage from '../components/LandingPage.astro';
-import { userConfig } from '../config/index';
+import Layout from "../layouts/Layout.astro";
+import LandingPage from "../components/LandingPage.astro";
+import { userConfig } from "../config/index";
 
-// Fetch SEO config from API with fallback to site.ts
-let seoTitle = userConfig.seo.title;
-let seoDescription = userConfig.seo.description;
+import { getAppConfig } from "../lib/config-server";
 
-try {
-  const baseUrl = import.meta.env.PUBLIC_SITE_URL || Astro.url.origin;
-  const apiUrl = `${baseUrl}/api/content/config`;
-  const response = await fetch(apiUrl);
-  if (response.ok) {
-    const config = await response.json();
-    if (config.seo) {
-      if (config.seo.title) seoTitle = config.seo.title;
-      if (config.seo.description) seoDescription = config.seo.description;
-    }
-  }
-} catch (error) {
-  console.warn('[index.astro] Failed to fetch SEO config from API, using fallback');
-}
+const config = await getAppConfig();
+const seoTitle = config.seo.title;
+const seoDescription = config.seo.description;
 ---
 
 <Layout
-  title={seoTitle}
-  description={seoDescription}
-  canonical=""
-  openGraph={{
-    url: "",
-    title: seoTitle,
-    description: seoDescription,
-    site_name: "",
-  }}
+	title={seoTitle}
+	description={seoDescription}
+	canonical=""
+	openGraph={{
+		url: "",
+		title: seoTitle,
+		description: seoDescription,
+		site_name: ""
+	}}
 >
-  <LandingPage />
+	<LandingPage />
 </Layout>

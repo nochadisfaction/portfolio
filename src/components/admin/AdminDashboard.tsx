@@ -100,9 +100,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    // Clear cookie by setting it to expire
-    document.cookie = 'admin_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/admin/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
     setIsAuthenticated(false);
     setNotes([]);
     setConfig({});
@@ -403,31 +406,28 @@ export default function AdminDashboard() {
         <div className="flex gap-4 mb-6 border-b border-gray-700">
           <button
             onClick={() => setActiveTab('notes')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'notes'
+            className={`px-4 py-2 font-medium transition-colors ${activeTab === 'notes'
                 ? 'text-blue-400 border-b-2 border-blue-400'
                 : 'text-gray-400 hover:text-gray-300'
-            }`}
+              }`}
           >
             Notes
           </button>
           <button
             onClick={() => setActiveTab('config')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'config'
+            className={`px-4 py-2 font-medium transition-colors ${activeTab === 'config'
                 ? 'text-blue-400 border-b-2 border-blue-400'
                 : 'text-gray-400 hover:text-gray-300'
-            }`}
+              }`}
           >
             Configuration
           </button>
           <button
             onClick={() => setActiveTab('backgrounds')}
-            className={`px-4 py-2 font-medium transition-colors ${
-              activeTab === 'backgrounds'
+            className={`px-4 py-2 font-medium transition-colors ${activeTab === 'backgrounds'
                 ? 'text-blue-400 border-b-2 border-blue-400'
                 : 'text-gray-400 hover:text-gray-300'
-            }`}
+              }`}
           >
             Backgrounds
           </button>
@@ -438,7 +438,7 @@ export default function AdminDashboard() {
           <div>
             <div className="mb-6">
               <h2 className="text-2xl font-bold mb-4">Manage Notes</h2>
-              
+
               {/* Create New Note */}
               <div className="bg-gray-800 rounded-lg p-4 mb-6">
                 <h3 className="text-lg font-semibold mb-4">Create New Note</h3>
@@ -570,11 +570,11 @@ export default function AdminDashboard() {
                     {['seo_title', 'seo_description', 'seo_keywords'].map((key) => {
                       const isKeywords = key === 'seo_keywords';
                       const existingValue = config[key];
-                      
+
                       // For keywords, convert JSON array to comma-separated for display
                       const getDisplayValue = () => {
-                        const val = editingConfig[key] !== undefined 
-                          ? editingConfig[key] 
+                        const val = editingConfig[key] !== undefined
+                          ? editingConfig[key]
                           : (existingValue?.value || '');
                         if (isKeywords && val) {
                           try {
@@ -588,7 +588,7 @@ export default function AdminDashboard() {
                         }
                         return val;
                       };
-                      
+
                       const handleValueChange = (newValue: string) => {
                         if (isKeywords) {
                           const keywordsArray = newValue
@@ -601,11 +601,11 @@ export default function AdminDashboard() {
                         }
                       };
 
-                      const labelText = key === 'seo_title' 
+                      const labelText = key === 'seo_title'
                         ? 'SEO Title'
                         : key === 'seo_description'
-                        ? 'SEO Description'
-                        : 'SEO Keywords (comma-separated)';
+                          ? 'SEO Description'
+                          : 'SEO Keywords (comma-separated)';
 
                       return (
                         <div key={key} className="bg-gray-800 rounded-lg p-4">

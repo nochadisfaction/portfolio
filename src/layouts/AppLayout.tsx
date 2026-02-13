@@ -138,6 +138,8 @@ export default function Desktop({ initialBg, backgroundMap }: AppLayoutProps) {
   const handleAppOpen = (app: App) => dispatch({ type: "OPEN", app });
   const handleAppClose = (app: App) => dispatch({ type: "CLOSE", app });
 
+  const [config, setConfig] = useState<any>(null);
+
   // Fetch app config from API
   useEffect(() => {
     const fetchConfig = async () => {
@@ -145,6 +147,7 @@ export default function Desktop({ initialBg, backgroundMap }: AppLayoutProps) {
         const response = await fetch("/api/content/config");
         if (response.ok) {
           const data = await response.json();
+          setConfig(data);
           if (data?.photoAlbum?.albumUrl && typeof data.photoAlbum.albumUrl === "string") {
             setAlbumUrl(data.photoAlbum.albumUrl);
           } else {
@@ -178,7 +181,7 @@ export default function Desktop({ initialBg, backgroundMap }: AppLayoutProps) {
 
         <div className="relative z-10">
           <MacToolbar
-            onShowTutorial={() => {}}
+            onShowTutorial={() => { }}
             onOpenSpotlight={() => setIsSpotlightOpen(true)}
             onOpenMissionControl={() => setIsMissionControlOpen(true)}
             onToggleShortcuts={() => setShowShortcuts((s) => !s)}
@@ -215,6 +218,7 @@ export default function Desktop({ initialBg, backgroundMap }: AppLayoutProps) {
             irc: showIRC,
             exploits: showExploits,
           }}
+          config={config}
         />
 
         <NotesApp

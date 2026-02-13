@@ -21,7 +21,8 @@ export default function GlitchApp({ isOpen, onClose }: GlitchAppProps) {
     if (!isOpen) {
       setPhase('normal');
     }
-  }, [isOpen, phase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -54,30 +55,30 @@ export default function GlitchApp({ isOpen, onClose }: GlitchAppProps) {
           >
             <FiX size={20} />
           </button>
-          
+
           <div className="flex items-center gap-3 mb-4">
             <FiTerminal className="text-green-400" size={24} />
             <h2 className="text-lg font-mono text-green-400">SYSTEM_RECOVERY_COMPLETE</h2>
           </div>
-          
+
           <div className="font-mono text-sm text-gray-300 space-y-3">
             <p className="text-yellow-400">Just kidding. ;)</p>
             <p>
-              You really thought I'd let Windows-style crashes happen here? 
+              You really thought I'd let Windows-style crashes happen here?
               This is a Linux household.
             </p>
             <p>
               Here's something real instead:
             </p>
             <blockquote className="border-l-2 border-green-400 pl-4 italic text-gray-400">
-              "The best systems are built by people who question the systems 
+              "The best systems are built by people who question the systems
               they're building. Every line of code is a political act."
             </blockquote>
             <p className="text-xs text-gray-500 mt-4">
               — Vivi, from the digital manifesto
             </p>
           </div>
-          
+
           <div className="mt-6 pt-4 border-t border-gray-800 flex justify-between items-center">
             <span className="text-xs text-gray-600">Hidden feature #001</span>
             <button

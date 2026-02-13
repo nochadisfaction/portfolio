@@ -4,45 +4,16 @@ import '../../styles/global.css';
 import { AstroSeo } from '@astrolib/seo';
 import { userConfig } from '../../config/index';
 
-// Build base URL for API calls
-const baseUrl = import.meta.env.PUBLIC_SITE_URL || Astro.url.origin;
+import { getAppConfig } from '../../lib/config-server';
 
-// Fetch SEO config from API with fallback to site.ts
-let seoTitle = userConfig.seo.title;
-let seoDescription = userConfig.seo.description;
-let seoKeywords = userConfig.seo.keywords;
+const config = await getAppConfig();
+const seoTitle = config.seo.title || userConfig.seo.title;
+const seoDescription = config.seo.description || userConfig.seo.description;
+const seoKeywords = config.seo.keywords;
 
-try {
-  const apiUrl = `${baseUrl}/api/content/config`;
-  const response = await fetch(apiUrl);
-  if (response.ok) {
-    const config = await response.json();
-    if (config.seo) {
-      if (config.seo.title) seoTitle = config.seo.title;
-      if (config.seo.description) seoDescription = config.seo.description;
-      if (config.seo.keywords && Array.isArray(config.seo.keywords)) {
-        seoKeywords = config.seo.keywords;
-      }
-    }
-  }
-} catch (error) {
-  console.warn('[BaseHead] Failed to fetch SEO config from API, using fallback');
-}
-
-// Fetch backgrounds from API for OG image
 let ogImageUrl: string | undefined = undefined;
-
-try {
-  const apiUrl = `${baseUrl}/api/content/backgrounds`;
-  const response = await fetch(apiUrl);
-  if (response.ok) {
-    const backgrounds = await response.json();
-    if (backgrounds.length > 0 && backgrounds[0].url) {
-      ogImageUrl = backgrounds[0].url;
-    }
-  }
-} catch (error) {
-  console.warn('[BaseHead] Failed to fetch backgrounds from API for OG image');
+if (config.backgrounds.length > 0 && config.backgrounds[0].url) {
+  ogImageUrl = config.backgrounds[0].url;
 }
 
 // Build safe defaults for SEO
