@@ -90,16 +90,15 @@ export const POST: APIRoute = async ({ request }) => {
     clearTimeout(timeoutId);
 
     if (!streamResponse.ok) {
-      const errorText = await streamResponse.text().catch(() => '');
-      console.error('[photo-album] Stream fetch failed:', streamResponse.status, errorText);
-      return bad(`Failed to fetch webstream: ${streamResponse.status} ${streamResponse.statusText}`, streamResponse.status);
+      console.error('[photo-album] Stream fetch failed:', streamResponse.status, streamResponse.statusText);
+      return bad('Upstream service error', 502);
     }
 
     const streamData = await streamResponse.json();
     console.log('[photo-album] Stream data received, photos count:', streamData.photos?.length || 0);
 
     if (!streamData.photos?.length) {
-      console.warn('[photo-album] No photos in stream data:', JSON.stringify(streamData).substring(0, 200));
+      console.warn('[photo-album] No photos in stream data');
       return bad('No photos found in album', 404);
     }
 
@@ -205,9 +204,8 @@ export const POST: APIRoute = async ({ request }) => {
     clearTimeout(assetTimeoutId);
 
     if (!assetResponse.ok) {
-      const errorText = await assetResponse.text().catch(() => '');
-      console.error('[photo-album] Asset fetch failed:', assetResponse.status, errorText);
-      return bad(`Failed to fetch webasseturls: ${assetResponse.status} ${assetResponse.statusText}`, assetResponse.status);
+      console.error('[photo-album] Asset fetch failed:', assetResponse.status, assetResponse.statusText);
+      return bad('Upstream service error', 502);
     }
 
     const assetData = await assetResponse.json();
@@ -248,8 +246,9 @@ export const POST: APIRoute = async ({ request }) => {
           const fullUrl = `${scheme}://${host}${path}`;
 
           // Detect if this is a video by checking the file extension in the URL
-          const urlLower = fullUrl.toLowerCase();
-          const isVideo = videoExtensions.some(ext => urlLower.includes(ext));
+          const urlObj = new URL(fullUrl);
+          const pathname = urlObj.pathname.toLowerCase();
+          const isVideo = videoExtensions.some(ext => pathname.endsWith(ext));
 
           // For videos, try to find a PosterFrame thumbnail if available (optimized lookup)
           let thumbnail: string | undefined = undefined;
@@ -297,7 +296,10 @@ export const POST: APIRoute = async ({ request }) => {
     return json(responseData);
   } catch (err: any) {
     console.error('[photo-album] Error fetching iCloud photos', err);
-    return bad(err?.message || 'Unknown error occurred', 500);
+    if (err.name === 'AbortError' || err?.type === 'aborted') {
+      return bad('Request timed out', 504);
+    }
+    return bad('Internal server error', 500);
   }
 };
 
@@ -305,7 +307,7 @@ export const OPTIONS: APIRoute = async () => {
   return new Response(null, {
     status: 204,
     headers: {
-      'Allow': 'POST, OPTIONS'
+      'Allow': 'GET, POST, OPTIONS'
     },
   });
 };
