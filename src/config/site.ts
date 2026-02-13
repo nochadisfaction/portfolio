@@ -1,17 +1,19 @@
 /**
- * SEO and theme configuration
+ * SEO configuration
  */
 
-import type { SEOConfig, ThemeConfig } from '../types';
+import type { SEOConfig } from "../types";
 
 export const seo: SEOConfig = {
-  title: 'Abdelrahman Saleh - Software Developer',
-  description: 'Software Developer based in Egypt specializing in React, Node.js, and modern web technologies',
-  keywords: ['Software Developer', 'React', 'Node.js', 'Web Development', 'Egypt'],
-};
-
-export const theme: ThemeConfig = {
-  primaryColor: '#1ED760', // Spotify green
-  secondaryColor: '#1d1d1f',
-  accentColor: '#007AFF',
+  title: "Vivi — Developer & Systems Architect",
+  description:
+    "AI systems architect. Digital insurgent. Building Pixelated Empathy and exploring the intersection of code, consciousness, and chaos.",
+  keywords: [
+    "developer",
+    "AI",
+    "systems architect",
+    "Pixelated Empathy",
+    "Gem City",
+    "chadisfaction",
+  ],
 };

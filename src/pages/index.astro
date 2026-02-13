@@ -1,25 +1,24 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import LandingPage from '../components/LandingPage.astro';
-import { userConfig } from '../config/index';
+import Layout from '../layouts/Layout.astro'
+import LandingPage from '../components/LandingPage.astro'
+import { userConfig } from '../config/index'
+
+import { getAppConfig } from '../lib/config-server'
+
+const config = await getAppConfig()
+const seoTitle = config.seo.title || userConfig.seo.title
+const seoDescription = config.seo.description || userConfig.seo.description
 ---
 
-<!-- 
-  Customize these values for your portfolio:
-  - title: Your name and role
-  - description: Brief description of your expertise
-  - canonical: Your website URL
-  - openGraph: Social media sharing metadata
--->
 <Layout
-  title={userConfig.seo.title}
-  description={userConfig.seo.description}
-  canonical={userConfig.website}
+  title={seoTitle}
+  description={seoDescription}
+  canonical=""
   openGraph={{
-    url: userConfig.website,
-    title: userConfig.seo.title,
-    description: userConfig.seo.description,
-    site_name: userConfig.name,
+    url: '',
+    title: seoTitle,
+    description: seoDescription,
+    site_name: '',
   }}
 >
   <LandingPage />

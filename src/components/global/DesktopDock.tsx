@@ -1,68 +1,60 @@
-import { useState, useEffect, useRef } from 'react';
-import { BsGithub, BsSpotify, BsFilePdf, BsStickyFill, BsLinkedin, BsCalendar } from 'react-icons/bs';
-import { IoIosCall, IoIosMail } from 'react-icons/io';
-import { FaLink, FaEnvelope } from 'react-icons/fa';
-import ResumeViewer from './ResumeViewer';
-import SpotifyPlayer from './SpotifyPlayer';
-import { userConfig } from '../../config/index';
-import { RiTerminalFill } from 'react-icons/ri';
+import { useState, useEffect, useRef } from "react";
+import AppleMusicPlayer from "./AppleMusicPlayer";
+import appleNotesIcon from "../../assets/images/apple-notes.svg?url";
+import applePhotosIcon from "../../assets/images/apple-photos.svg?url";
+import appleMusicIcon from "../../assets/images/apple-music.svg?url";
+import { FiTerminal, FiShield, FiAlertTriangle } from "react-icons/fi";
 
 interface DesktopDockProps {
-  onTerminalClick: () => void;
   onNotesClick: () => void;
-  onGitHubClick: () => void;
-  onContactClick: () => void;
+  onPhotoAlbumClick: () => void;
+  onGlitchClick: () => void;
+  onIRCClick: () => void;
+  onExploitsClick: () => void;
   activeApps: {
-    terminal: boolean;
     notes: boolean;
-    github: boolean;
-    resume: boolean;
-    spotify: boolean;
+    music: boolean;
+    photoAlbum: boolean;
+    glitch: boolean;
+    irc: boolean;
+    exploits: boolean;
   };
+  config: any;
 }
 
-const DesktopDock = ({ onTerminalClick, onNotesClick, onGitHubClick, onContactClick, activeApps }: DesktopDockProps) => {
+const DesktopDock = ({
+  onNotesClick,
+  onPhotoAlbumClick,
+  onGlitchClick,
+  onIRCClick,
+  onExploitsClick,
+  activeApps,
+  config,
+}: DesktopDockProps) => {
   const [hoveredIcon, setHoveredIcon] = useState<string | null>(null);
-  const [showResume, setShowResume] = useState(false);
-  const [showSpotify, setShowSpotify] = useState(false);
-  const [showLinksPopup, setShowLinksPopup] = useState(false);
+  const [showAppleMusic, setShowAppleMusic] = useState(false);
   const [mouseX, setMouseX] = useState<number | null>(null);
+  const [playlistId, setPlaylistId] = useState<string | null>(null);
   const dockRef = useRef<HTMLDivElement>(null);
-  const linksPopupRef = useRef<HTMLDivElement>(null);
 
-  const handleLinksClick = () => {
-    setShowLinksPopup(!showLinksPopup);
+  // Update playlistId when config changes
+  useEffect(() => {
+    if (config?.music?.playlistId) {
+      setPlaylistId(config.music.playlistId);
+    } else {
+      setPlaylistId(null);
+    }
+  }, [config]);
+
+  const handleAppleMusicClick = () => {
+    setShowAppleMusic(true);
   };
 
-  const handleCalendarClick = () => {
-    window.open(userConfig.contact.calendly, '_blank');
+  const handleCloseAppleMusic = () => {
+    setShowAppleMusic(false);
   };
-
-  const handleSpotifyClick = () => {
-    setShowSpotify(true);
-  };
-
-  const handleResumeClick = () => {
-    setShowResume(true);
-  };
-
-  const handleCloseResume = () => {
-    setShowResume(false);
-  };
-
-  const handleCloseSpotify = () => {
-    setShowSpotify(false);
-  };
-
-  // Email is handled via Contact widget now; direct mail link remains in Links popup
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (linksPopupRef.current && !linksPopupRef.current.contains(event.target as Node)) {
-        setShowLinksPopup(false);
-      }
-    }
-
     const handleMouseMove = (e: MouseEvent) => {
       if (dockRef.current) {
         const rect = dockRef.current.getBoundingClientRect();
@@ -78,13 +70,11 @@ const DesktopDock = ({ onTerminalClick, onNotesClick, onGitHubClick, onContactCl
       setMouseX(null);
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseleave", handleMouseLeave);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseleave", handleMouseLeave);
     };
   }, []);
 
@@ -106,86 +96,112 @@ const DesktopDock = ({ onTerminalClick, onNotesClick, onGitHubClick, onContactCl
     </div>
   );
 
-  const LinksPopup = () => (
-    <div
-      ref={linksPopupRef}
-      className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800/90 w-30 backdrop-blur-sm rounded-lg p-4 shadow-xl"
-    >
-      <div className="grid grid-cols-1 gap-y-2">
-        <a
-          href={userConfig.social.linkedin}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-gray-300 hover:text-white"
-        >
-          <BsLinkedin size={20} />
-          <span>LinkedIn</span>
-        </a>
-        <a
-          href={userConfig.social.github}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2 text-gray-300 hover:text-white"
-        >
-          <BsGithub size={20} />
-          <span>GitHub</span>
-        </a>
-        <a
-          href={`mailto:${userConfig.contact.email}`}
-          className="flex items-center gap-2 text-gray-300 hover:text-white"
-        >
-          <IoIosMail size={20} />
-          <span>Email</span>
-        </a>
-        <a
-          href={`tel:${userConfig.contact.phone}`}
-          className="flex items-center gap-2 text-gray-300 hover:text-white"
-        >
-          <IoIosCall size={20} />
-          <span>Call</span>
-        </a>
-      </div>
-    </div>
-  );
-
   const icons = [
-    { id: 'github', label: 'My Projects', onClick: onGitHubClick, icon: BsGithub, color: 'from-black to-black/60', active: activeApps.github },
-    { id: 'notes', label: 'Resume Notes', onClick: onNotesClick, icon: BsStickyFill, color: 'from-yellow-600 to-yellow-400', active: activeApps.notes },
-    { id: 'resume', label: 'View Resume', onClick: handleResumeClick, icon: BsFilePdf, color: 'from-red-600 to-red-400', active: activeApps.resume },
-    { id: 'calendar', label: 'Schedule a Call', onClick: handleCalendarClick, icon: BsCalendar, color: 'from-blue-600 to-blue-400', active: false },
-    { id: 'spotify', label: 'Spotify Playlist', onClick: handleSpotifyClick, icon: BsSpotify, color: 'from-green-600 to-green-400', active: activeApps.spotify },
-    { id: 'email', label: 'Contact', onClick: onContactClick, icon: IoIosMail, color: 'from-blue-600 to-blue-400', active: false },
-    { id: 'links', label: 'Contact Links', onClick: handleLinksClick, icon: FaLink, color: 'from-purple-600 to-purple-400', active: false },
-    { id: 'terminal', label: 'Terminal', onClick: onTerminalClick, icon: RiTerminalFill, color: 'from-black to-black/60', active: activeApps.terminal },
-  ];
+    {
+      id: "notes",
+      label: "Notes",
+      onClick: onNotesClick,
+      iconSvg: appleNotesIcon,
+      color: "from-yellow-600 to-yellow-400",
+      active: activeApps.notes,
+    },
+    {
+      id: "photoAlbum",
+      label: "Photos",
+      onClick: onPhotoAlbumClick,
+      iconSvg: applePhotosIcon,
+      color: "from-white-600 to-white-400",
+      active: activeApps.photoAlbum,
+    },
+    {
+      id: "music",
+      label: "Apple Music",
+      onClick: handleAppleMusicClick,
+      iconSvg: appleMusicIcon,
+      color: "from-pink-600 to-pink-400",
+      active: activeApps.music,
+    },
+    {
+      id: "exploits",
+      label: "Security Advisories",
+      onClick: onExploitsClick,
+      icon: FiAlertTriangle,
+      color: "from-red-600 to-red-400",
+      active: activeApps.exploits,
+    },
+    {
+      id: "irc",
+      label: "Terminal",
+      onClick: onIRCClick,
+      icon: FiTerminal,
+      color: "from-green-600 to-green-400",
+      active: activeApps.irc,
+    },
+    {
+      id: "glitch",
+      label: "System",
+      onClick: onGlitchClick,
+      icon: FiShield,
+      color: "from-blue-600 to-blue-400",
+      active: activeApps.glitch,
+    },
+  ] as Array<{
+    id: string;
+    label: string;
+    onClick: () => void;
+    color: string;
+    active: boolean;
+    icon?: React.ComponentType<{ size?: number; className?: string }>;
+    iconSvg?: string;
+  }>;
 
   return (
     <>
-      <nav aria-label="Dock" className="fixed bottom-0 left-0 right-0 hidden md:flex justify-center pb-4 z-100">
+      <nav
+        aria-label="Dock"
+        className="fixed bottom-0 left-0 right-0 hidden md:flex justify-center pb-4 z-100"
+      >
         <div ref={dockRef} className="bg-gray-600/50 backdrop-blur-sm rounded-2xl p-2 shadow-xl">
           <div className="flex space-x-2" role="menubar">
             {icons.map((item, index) => {
               const Icon = item.icon;
               const scale = calculateScale(index, icons.length);
+              const hasSvg = item.iconSvg !== undefined;
               return (
                 <button
                   key={item.id}
                   onClick={item.onClick}
                   aria-label={item.label}
-                  aria-haspopup={item.id === 'links' ? 'menu' : undefined}
-                  aria-expanded={item.id === 'links' ? showLinksPopup : undefined}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); item.onClick(); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      item.onClick();
+                    }
+                  }}
                   onMouseEnter={() => setHoveredIcon(item.id)}
                   onMouseLeave={() => setHoveredIcon(null)}
                   className="relative group"
-                  style={{ transform: `scale(${scale})`, transition: 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
+                  style={{
+                    transform: `scale(${scale})`,
+                    transition: "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
                 >
-                  <div className={`relative w-12 h-12 bg-gradient-to-t ${item.color} rounded-xl flex items-center justify-center shadow-lg active:scale-95 ${item.active ? 'ring-2 ring-white/50' : ''}`}>
-                    <Icon size={item.id === 'email' ? 40 : item.id === 'calendar' || item.id === 'links' ? 30 : 35} className='text-white' />
-                    {item.active && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full" aria-hidden="true" />}
+                  <div
+                    className={`relative w-12 h-12 bg-gradient-to-t ${item.color} rounded-xl shadow-lg active:scale-95 ${item.active ? "ring-2 ring-white/50" : ""} ${hasSvg ? "overflow-hidden" : "flex items-center justify-center"}`}
+                  >
+                    {hasSvg && item.iconSvg ? (
+                      <img src={item.iconSvg} alt={item.label} className="w-full h-full" />
+                    ) : Icon ? (
+                      <Icon size={35} className="text-white" />
+                    ) : null}
+                    {item.active && (
+                      <span
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-white rounded-full"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                   {hoveredIcon === item.id && <Tooltip text={item.label} />}
-                  {item.id === 'links' && showLinksPopup && <LinksPopup />}
                 </button>
               );
             })}
@@ -193,11 +209,10 @@ const DesktopDock = ({ onTerminalClick, onNotesClick, onGitHubClick, onContactCl
         </div>
       </nav>
 
-      <ResumeViewer isOpen={showResume} onClose={handleCloseResume} />
-      <SpotifyPlayer
-        isOpen={showSpotify}
-        onClose={handleCloseSpotify}
-        playlistId={userConfig.spotify.playlistId}
+      <AppleMusicPlayer
+        isOpen={showAppleMusic}
+        onClose={handleCloseAppleMusic}
+        playlistId={playlistId}
       />
     </>
   );
